@@ -1,20 +1,28 @@
 const admin = require("firebase-admin");
 
-// Đường dẫn này trỏ đến file key ở thư mục gốc của dự án
-const serviceAccount = require("../serviceAccountKey.json");
+try {
+  // Lấy chuỗi JSON từ biến môi trường mà bạn đã set trên Render
+  const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT;
 
-// Hàm để khởi tạo, đảm bảo chỉ chạy một lần
-const initializeFirebaseAdmin = () => {
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-    console.log("Firebase Admin SDK initialized successfully.");
+  if (!serviceAccountString) {
+    throw new Error(
+      "Biến môi trường FIREBASE_SERVICE_ACCOUNT chưa được thiết lập."
+    );
   }
-};
 
-// Khởi tạo ngay khi file này được require
-initializeFirebaseAdmin();
+  // Parse chuỗi JSON đó thành một object
+  const serviceAccount = JSON.parse(serviceAccountString);
 
-// Xuất ra instance đã được khởi tạo để các file khác có thể dùng
+  // Khởi tạo Firebase Admin với object credentials
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+
+  console.log("Firebase Admin SDK đã được khởi tạo thành công.");
+} catch (error) {
+  console.error("Lỗi khi khởi tạo Firebase Admin SDK:", error.message);
+  // Dừng ứng dụng nếu không thể kết nối Firebase, vì các tính năng liên quan sẽ lỗi
+  process.exit(1);
+}
+
 module.exports = admin;
