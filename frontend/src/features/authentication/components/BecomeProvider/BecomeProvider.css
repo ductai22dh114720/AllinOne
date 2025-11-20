@@ -1,0 +1,115 @@
+/* src/components/BecomeProvider/BecomeProvider.css */
+
+.become-provider-section {
+  display: flex;
+  align-items: center;
+  gap: 5rem; /* Tăng khoảng cách */
+
+  /* THAY ĐỔI LỚN: Sử dụng màu chính làm nền */
+  background-color: var(--primary-color);
+
+  /* Section này sẽ tràn viền để tạo sự liền mạch */
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6rem 5%; /* Padding theo % để co giãn tốt hơn */
+
+  /* Bỏ bo góc để liền mạch */
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.provider-content {
+  flex: 1 1 50%;
+  max-width: 600px;
+}
+
+/* THAY ĐỔI LỚN: Thiết kế lại subtitle thành dạng "pill" */
+.section-subtitle {
+  display: inline-block; /* Để nó chỉ chiếm độ rộng của nội dung */
+  font-size: 0.9rem;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.1); /* Nền mờ */
+  color: var(--text-light); /* Chữ màu sáng */
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-pill);
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* THAY ĐỔI: Chuyển màu chữ thành sáng để nổi trên nền tối */
+.provider-content h2,
+.provider-content p,
+.benefits-list li {
+  color: var(--text-light);
+}
+
+.provider-content h2 {
+  text-align: left;
+  font-size: 2.8rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.95; /* Giảm nhẹ độ chói của chữ trắng */
+}
+
+.provider-content p {
+  opacity: 0.8; /* Giảm nhẹ độ chói */
+  margin-bottom: 2.5rem;
+}
+
+.benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 3rem 0; /* Tăng khoảng cách dưới */
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.benefits-list li {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.check-icon {
+  color: var(--secondary-color); /* Giữ màu phụ để tạo điểm nhấn */
+  font-size: 1.2rem;
+  margin-right: 1rem;
+}
+
+.provider-illustration {
+  flex: 1 1 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.provider-illustration img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .become-provider-section {
+    flex-direction: column; /* Không cần reverse nữa vì đã đảo trong JSX */
+    padding: 4rem 2rem;
+    gap: 3rem;
+  }
+
+  .provider-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .provider-content h2 {
+    text-align: center;
+    font-size: 2.2rem;
+  }
+}

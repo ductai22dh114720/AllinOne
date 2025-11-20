@@ -1,0 +1,40 @@
+.cta-section {
+  /* Section này sẽ có màu nền chính để nổi bật */
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius-large);
+  padding: 5rem 3rem;
+  margin-top: 6rem; /* Khoảng cách với section testimonials */
+  margin-bottom: 6rem; /* Khoảng cách với footer */
+  text-align: center;
+  position: relative;
+  overflow: hidden; /* Dành cho các hiệu ứng nền sau này nếu có */
+}
+
+.cta-content {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Chuyển màu chữ của section này thành màu sáng */
+.cta-content h2,
+.cta-content p {
+  color: var(--text-light);
+}
+
+.cta-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.95;
+}
+
+.cta-content p {
+  font-size: 1.2rem;
+  opacity: 0.8;
+  margin-bottom: 2.5rem;
+}
+
+/* Nút sẽ có màu phụ để nổi bật trên nền chính */
+.cta-content .btn-secondary {
+  padding: 1.2rem 3rem; /* Làm nút to và nổi bật hơn */
+  font-size: 1.2rem;
+}

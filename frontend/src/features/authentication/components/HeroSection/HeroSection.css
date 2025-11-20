@@ -1,0 +1,170 @@
+.hero-section {
+  display: flex; /* Bỏ flex, để nó là block mặc định */
+  position: relative;
+  width: 100vw; /* TINH CHỈNH: Chiếm 100% chiều rộng màn hình */
+  left: 50%; /* Dịch sang phải 50% */
+  transform: translateX(-50%); /* Dịch lại sang trái 50% để căn giữa */
+  min-height: 90vh;
+  padding: 8rem 0; /* Tăng padding trên dưới để tạo khoảng cách với Header */
+  overflow: hidden;
+}
+
+.hero-container {
+  width: 100%;
+  max-width: 90%; /* Cùng max-width với header-nav */
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+}
+
+/* Các hình nền trang trí mềm mại */
+.hero-section::before,
+.hero-section::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%; /* Tạo hình tròn/elip */
+  z-index: -1;
+  opacity: 0.15;
+  filter: blur(120px); /* Hiệu ứng mờ ảo */
+}
+
+.hero-section::before {
+  width: 500px;
+  height: 500px;
+  background-color: var(--secondary-color);
+  top: -150px;
+  left: -200px;
+}
+
+.hero-section::after {
+  width: 450px;
+  height: 450px;
+  background-color: var(--primary-color);
+  bottom: -100px;
+  right: -150px;
+}
+
+.hero-content {
+  flex: 1 1 50%; /* Tỉ lệ 50% */
+  max-width: 600px;
+}
+
+.hero-content h1 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 1.5rem;
+  /* TINH CHỈNH: Sử dụng clamp() để font-size co giãn linh hoạt */
+  font-size: clamp(2.5rem, 5vw, 4rem);
+}
+
+.hero-content .subtitle {
+  font-size: 1.25rem;
+  color: var(--text-medium);
+  margin-bottom: 3rem;
+  max-width: 450px;
+}
+
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: var(--text-light);
+  padding: 0.5rem;
+  border-radius: var(--border-radius-pill);
+  box-shadow: var(--shadow-medium);
+  width: 100%;
+  max-width: 520px;
+}
+.search-form button {
+  background-color: var(
+    --primary-color
+  ); /* Dùng màu chính cho hành động quan trọng nhất */
+  color: var(--text-light);
+}
+
+.search-form button:hover {
+  background-color: #3e4a75;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-medium);
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  padding-left: 1rem;
+}
+
+.search-icon {
+  color: var(--text-medium);
+  margin-right: 0.75rem;
+}
+
+.search-form input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1.1rem;
+  width: 100%;
+}
+
+.hero-illustration {
+  flex: 1 1 50%; /* Tỉ lệ 50% */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-illustration img {
+  width: 100%;
+  max-width: 650px; /* Giới hạn kích thước tối đa của ảnh */
+  height: auto;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .hero-content h1 {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .hero-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-illustration {
+    margin-top: 4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    flex-direction: column; /* Chuyển thành layout cột */
+    text-align: center;
+    min-height: auto;
+  }
+
+  .hero-content {
+    max-width: 100%;
+    padding-right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .search-form {
+    max-width: 100%;
+  }
+
+  .hero-illustration {
+    margin-top: 3rem;
+  }
+}

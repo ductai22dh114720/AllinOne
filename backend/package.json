@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "workspaces": [
+    "user-service",
+    "map-service"
+  ],
+  "scripts": {
+    "start": "node server.js",
+    "dev": "concurrently \"npm:dev:*\" ",
+    "dev:user": "npm run dev --workspace=user-service",
+    "dev:map": "npm run dev --workspace=map-service"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

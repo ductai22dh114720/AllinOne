@@ -1,0 +1,170 @@
+/* src/pages/HomePage/HomePage.css */
+
+/* Định nghĩa biến CSS cho 3 màu chủ đạo và các tông màu phụ trợ */
+:root {
+  /* Màu chính (Dark Indigo/Slate Blue - hơi xám/tím) */
+  --primary-color: #4a5581;
+  /* Màu phụ (Peach/Coral nhạt - thân thiện, năng lượng) */
+  --secondary-color: #ffb396;
+  /* Màu nhấn/Trung tính ấm (Light Warm Gray/Off-white - sang trọng, dịu mắt) */
+  --accent-color: #ebebeb;
+
+  /* Màu nền tổng thể */
+  --background-light: #fdfbf7; /* Gần như trắng ngà */
+  /* Màu văn bản */
+  --text-dark: #333333;
+  --text-medium: #666666;
+  --text-light: #ffffff;
+
+  /* Bo góc chung */
+  --border-radius-small: 8px;
+  --border-radius-medium: 16px;
+  --border-radius-large: 24px;
+  --border-radius-pill: 9999px;
+
+  /* Box Shadow tinh tế */
+  --shadow-soft: 0 8px 24px rgba(74, 85, 129, 0.08); /* Dùng màu chính để shadow đẹp hơn */
+  --shadow-medium: 0 12px 30px rgba(74, 85, 129, 0.12);
+}
+
+body {
+  font-family: "Inter", sans-serif; /* Sử dụng font hiện đại, bạn có thể import từ Google Fonts */
+  color: var(--text-dark);
+  background-color: var(--background-light);
+  line-height: 1.6;
+  overflow-x: hidden; /* Ngăn chặn overflow ngang */
+}
+
+.homepage-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Đảm bảo wrapper chiếm toàn bộ chiều cao */
+}
+
+.homepage-main-content {
+  flex-grow: 1; /* Cho phép phần nội dung chính mở rộng để đẩy footer xuống dưới */
+  width: 100%;
+  max-width: 1320px; /* Giới hạn chiều rộng nội dung để không bị quá rộng trên màn hình lớn */
+  margin: 0 auto; /* Căn giữa nội dung */
+  padding: 0 2rem; /* Padding ngang */
+}
+
+/* Base styles for sections to ensure consistent spacing */
+section {
+  padding: 8rem 0; /* Padding trên dưới cho mỗi section */
+  position: relative; /* Quan trọng cho việc định vị các yếu tố background/animation */
+}
+
+section:not(:last-of-type) {
+  margin-bottom: 2rem; /* Khoảng cách giữa các section */
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-dark);
+}
+
+h1 {
+  font-size: 3.8rem; /* Kích thước lớn cho tiêu đề chính */
+}
+
+h2 {
+  font-size: 2.8rem;
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+h3 {
+  font-size: 2rem;
+}
+
+p {
+  font-size: 1.1rem;
+}
+
+/* Các styles cho nút chung */
+.btn {
+  display: inline-flex; /* Đảm bảo nút có thể chứa icon và căn giữa nội dung */
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: var(--border-radius-pill); /* Bo góc tối đa */
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease; /* Chuyển động mượt mà hơn */
+  text-decoration: none; /* Dành cho các nút dạng link */
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  box-shadow: var(--shadow-soft);
+}
+
+.btn-primary:hover {
+  background-color: #3e4a75; /* Màu đậm hơn của primary-color */
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  color: var(--text-dark);
+  box-shadow: var(--shadow-soft);
+}
+
+.btn-secondary:hover {
+  background-color: #ff9f7a;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  box-shadow: none;
+}
+
+.btn-outline:hover {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+  h2 {
+    font-size: 2rem;
+  }
+  p {
+    font-size: 1rem;
+  }
+  section {
+    padding: 4rem 0;
+  }
+  .homepage-main-content {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 2rem;
+  }
+  h2 {
+    font-size: 1.8rem;
+  }
+  .btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+}

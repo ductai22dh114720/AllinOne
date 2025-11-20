@@ -1,0 +1,165 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  --primary-color: #333;
+  --secondary-color: #777;
+  --card-background: #ffffff;
+  --btn-primary-bg: #e0e0e0;
+  --btn-primary-hover-bg: #cccccc;
+  --error-bg: #f8d7da;
+  --error-color: #721c24;
+}
+
+/* AUTH CARD CONTAINER */
+.auth-card {
+  font-family: "Inter", sans-serif;
+  background: var(--card-background);
+  padding: 2.5rem 3rem;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+
+  /* Trạng thái ban đầu cho animation của GSAP */
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+/* TYPOGRAPHY */
+.auth-card h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+}
+
+.auth-card .subtitle {
+  margin-bottom: 2rem;
+  color: var(--secondary-color);
+}
+
+.auth-card .subtitle a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-card .subtitle a:hover {
+  text-decoration: underline;
+}
+
+/* FORM ELEMENTS */
+.form-group {
+  text-align: left;
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: "Inter", sans-serif;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.forgot-password {
+  display: block;
+  text-align: right;
+  margin-bottom: 1.5rem;
+  color: #007bff;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+/* BUTTONS */
+.btn {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: "Inter", sans-serif;
+}
+
+.btn-primary {
+  background-color: var(--btn-primary-bg);
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+}
+
+.btn-primary:hover {
+  background-color: var(--btn-primary-hover-bg);
+}
+
+.btn-primary:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.social-logins {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-social {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--secondary-color);
+}
+
+.btn-social:hover {
+  background-color: #f5f5f5;
+  color: var(--primary-color);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  color: var(--primary-color);
+}
+
+.btn-outline:hover {
+  background-color: #f5f5f5;
+}
+
+.icon-left {
+  margin-right: 0.5rem;
+}
+
+/* ERROR MESSAGE */
+.error-message {
+  background-color: var(--error-bg);
+  color: var(--error-color);
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.9rem;
+}

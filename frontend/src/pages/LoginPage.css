@@ -1,0 +1,19 @@
+.login-page-container {
+  /* Quan trọng nhất: Đảm bảo container chiếm toàn bộ chiều cao màn hình */
+  min-height: 100vh;
+  width: 100%;
+
+  /* Sử dụng Flexbox để căn giữa form một cách hoàn hảo */
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  /* Set background image */
+  background-image: url("../assets/image.png"); /* Cập nhật lại đường dẫn nếu cần */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  padding: 1rem; /* Thêm chút padding cho màn hình nhỏ */
+  padding-left: 10vw;
+}
