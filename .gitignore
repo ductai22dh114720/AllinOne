@@ -25,8 +25,12 @@ yarn-error.log*
 
 # Secret files
 serviceAccountKey.json
+serviceAccountKey.json.json
 backend/user-service/serviceAccountKey.json
+backend/user-service/serviceAccountKey.json.json
 backend/map-service/serviceAccountKey.json
+backend/map-service/serviceAccountKey.json.json
+*.json.json
 
 # IDEs and editors
 .idea
