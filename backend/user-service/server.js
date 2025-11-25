@@ -5,6 +5,8 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const passport = require("passport");
 const serviceRoutes = require("./routes/serviceRoutes");
+const walletRoutes = require("./routes/walletRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const whitelist = ["http://localhost:3000", "http://localhost:5173"];
 const corsOptions = {
   origin: function (origin, callback) {
@@ -40,6 +42,8 @@ app.use(cors(corsOptions));
 // Mount routers
 app.use("/api/auth", authRoutes);
 app.use("/api/services", serviceRoutes);
+app.use("/api/wallet", walletRoutes);
+app.use("/api/admin", adminRoutes);
 
 const PORT = process.env.PORT || 5001;
 

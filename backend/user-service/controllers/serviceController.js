@@ -1,5 +1,6 @@
 const Service = require("../models/Service");
 const User = require("../models/User");
+const Transaction = require("../models/Transaction");
 
 // @desc    Tạo một dịch vụ mới
 // @route   POST /api/services
@@ -24,6 +25,49 @@ exports.createService = async (req, res) => {
   } = req.body;
 
   try {
+    // Kiểm tra và tính phí đăng tin (10% của giá dịch vụ)
+    const postingFee = price * 0.1;
+    const provider = await User.findById(req.user.id);
+    
+    if (!provider) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    // Kiểm tra số dư ví
+    if (provider.wallet.balance < postingFee) {
+      return res.status(400).json({ 
+        message: `Số dư ví không đủ. Cần ${postingFee.toLocaleString("vi-VN")} VNĐ để đăng tin (10% phí đăng tin)` 
+      });
+    }
+
+    // Trừ phí đăng tin từ ví provider
+    provider.wallet.balance -= postingFee;
+    await provider.save();
+
+    // Tạo transaction cho phí đăng tin
+    await Transaction.create({
+      user: req.user.id,
+      type: "fee",
+      amount: postingFee,
+      status: "completed",
+      description: `Phí đăng tin dịch vụ: ${serviceName} (10% của ${price.toLocaleString("vi-VN")} VNĐ)`,
+    });
+
+    // Cộng phí đăng tin vào ví admin
+    const admin = await User.findOne({ role: "admin" });
+    if (admin) {
+      admin.wallet.balance += postingFee;
+      await admin.save();
+
+      await Transaction.create({
+        user: admin._id,
+        type: "revenue",
+        amount: postingFee,
+        status: "completed",
+        description: `Phí đăng tin từ dịch vụ: ${serviceName}`,
+      });
+    }
+
     const service = new Service({
       provider: req.user.id,
       serviceName,

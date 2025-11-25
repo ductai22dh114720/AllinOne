@@ -35,6 +35,9 @@ const userSchema = new mongoose.Schema(
       language: { type: String, default: "vi" },
       // Bạn có thể thêm các cài đặt khác ở đây
     },
+    wallet: {
+      balance: { type: Number, default: 0, min: 0 },
+    },
   },
   { timestamps: true }
 );

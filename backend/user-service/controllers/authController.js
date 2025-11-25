@@ -34,6 +34,7 @@ exports.registerUser = async (req, res) => {
       _id: user._id,
       fullName: user.fullName,
       email: user.email,
+      role: user.role,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -54,6 +55,7 @@ exports.signInUser = async (req, res) => {
     _id: user._id,
     fullName: user.fullName,
     email: user.email,
+    role: user.role,
     token: generateToken(user._id),
   });
 };
@@ -68,6 +70,7 @@ exports.getUserProfile = async (req, res) => {
     id: req.user.id,
     fullName: req.user.fullName,
     email: req.user.email,
+    role: req.user.role,
   });
 };
 
@@ -111,6 +114,7 @@ exports.socialLogin = async (req, res) => {
       _id: user._id,
       fullName: user.fullName,
       email: user.email,
+      role: user.role,
       token: generateToken(user._id),
     });
   } catch (error) {
