@@ -17,7 +17,7 @@ const vnp_Url =
 // - Nếu deploy Render: https://allinone-user-service.onrender.com/api/wallet/return
 // - KHÔNG dùng: http://localhost:5001/api/wallet/return (VNPAY không thể gọi được)
 const vnp_ReturnUrl =
-  process.env.VNP_RETURN_URL || "http://localhost:5001/api/wallet/return";
+  process.env.VNP_RETURN_URL || "https://allinone-user-service.onrender.com/api/wallet/return";
 
 // Hàm sort object đúng chuẩn VNPAY
 const sortObject = (obj) => {
