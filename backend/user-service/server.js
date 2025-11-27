@@ -7,10 +7,15 @@ const passport = require("passport");
 const serviceRoutes = require("./routes/serviceRoutes");
 const walletRoutes = require("./routes/walletRoutes");
 const adminRoutes = require("./routes/adminRoutes");
-const whitelist = ["http://localhost:3000", "http://localhost:5173"];
+const whitelist = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://sandbox.vnpayment.vn", // Cho phép VNPAY gọi callback
+];
 const corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
+    // Cho phép requests không có origin (như redirect từ VNPAY) hoặc từ whitelist
+    if (!origin || whitelist.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));

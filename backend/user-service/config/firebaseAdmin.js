@@ -2,18 +2,15 @@ const admin = require("firebase-admin");
 try {
   let serviceAccount;
 
-  // KIỂM TRA: Nếu đang ở môi trường production (trên Render)
-  if (
-    process.env.NODE_ENV === "production" &&
-    process.env.FIREBASE_SERVICE_ACCOUNT
-  ) {
+  // KIỂM TRA: Ưu tiên dùng biến môi trường FIREBASE_SERVICE_ACCOUNT (cho Render/deploy)
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     console.log(
-      "Đang chạy ở môi trường Production, đọc credentials từ biến môi trường."
+      "Đang chạy ở môi trường Production/Deploy, đọc credentials từ biến môi trường."
     );
     // Parse chuỗi JSON từ biến môi trường
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   } else {
-    // Nếu đang ở môi trường local
+    // Nếu không có biến môi trường, đọc từ file JSON (cho local development)
     console.log(
       "Đang chạy ở môi trường Local, đọc credentials từ file serviceAccountKey.json."
     );

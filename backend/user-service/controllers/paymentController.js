@@ -198,6 +198,7 @@ exports.vnpayIpn = async (req, res) => {
 // @access  Public
 exports.vnpayCallback = async (req, res) => {
   try {
+    console.log("VNPAY Callback received:", req.query);
     let vnp_Params = req.query;
     const secureHash = vnp_Params["vnp_SecureHash"];
 
