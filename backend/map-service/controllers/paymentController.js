@@ -22,19 +22,29 @@ const vnp_ReturnUrl =
 
 // Hàm sort object đúng chuẩn VNPAY
 const sortObject = (obj) => {
-  const sorted = {};
-  const keys = Object.keys(obj)
-    .filter(
-      (key) => obj[key] !== null && obj[key] !== undefined && obj[key] !== ""
-    )
-    .sort();
+  let sorted = {};
+  let str = [];
+  let key;
+  // Lọc key không rỗng, không null, không undefined
+  for (key in obj) {
+    if (
+      obj.hasOwnProperty(key) &&
+      obj[key] !== null &&
+      obj[key] !== undefined &&
+      obj[key] !== ""
+    ) {
+      str.push(key); // Chỉ push key (không encode key)
+    }
+  }
+  str.sort();
 
-  for (const key of keys) {
-    sorted[key] = obj[key];
+  for (key = 0; key < str.length; key++) {
+    // URL-encode value và thay thế %20 bằng +
+    let value = String(obj[str[key]]); // Đảm bảo là string
+    sorted[str[key]] = encodeURIComponent(value).replace(/%20/g, "+");
   }
   return sorted;
 };
-
 // @desc    Tạo URL thanh toán VNPAY cho nạp tiền
 // @route   POST /api/wallet/topup
 // @access  Private
