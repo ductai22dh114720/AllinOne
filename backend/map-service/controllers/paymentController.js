@@ -17,13 +17,16 @@ const vnp_Url =
 // - Nếu deploy Render: https://allinone-map-service.onrender.com/api/wallet/return
 // - KHÔNG dùng: http://localhost:5002/api/wallet/return (VNPAY không thể gọi được)
 const vnp_ReturnUrl =
-  process.env.VNP_RETURN_URL || "https://allinone-map-service.onrender.com/api/wallet/return";
+  process.env.VNP_RETURN_URL ||
+  "https://allinone-map-service.onrender.com/api/wallet/return";
 
 // Hàm sort object đúng chuẩn VNPAY
 const sortObject = (obj) => {
   const sorted = {};
   const keys = Object.keys(obj)
-    .filter((key) => obj[key] !== null && obj[key] !== undefined && obj[key] !== "")
+    .filter(
+      (key) => obj[key] !== null && obj[key] !== undefined && obj[key] !== ""
+    )
     .sort();
 
   for (const key of keys) {
@@ -39,7 +42,9 @@ exports.createTopupPayment = async (req, res) => {
   try {
     // Kiểm tra cấu hình VNPAY trước khi tiếp tục để tránh lỗi key = undefined
     if (!vnp_TmnCode || !vnp_HashSecret) {
-      console.error("VNPAY config error: VNP_TMNCODE or VNP_HASH_SECRET is missing");
+      console.error(
+        "VNPAY config error: VNP_TMNCODE or VNP_HASH_SECRET is missing"
+      );
       return res.status(500).json({
         message:
           "VNPAY chưa được cấu hình đúng trên server. Vui lòng liên hệ admin để bổ sung VNP_TMNCODE và VNP_HASH_SECRET.",
@@ -49,7 +54,9 @@ exports.createTopupPayment = async (req, res) => {
     const { amount } = req.body;
 
     if (!amount || amount < 10000) {
-      return res.status(400).json({ message: "Số tiền nạp tối thiểu là 10,000 VNĐ" });
+      return res
+        .status(400)
+        .json({ message: "Số tiền nạp tối thiểu là 10,000 VNĐ" });
     }
 
     const user = await User.findById(req.user.id);
@@ -85,6 +92,11 @@ exports.createTopupPayment = async (req, res) => {
       req.socket?.remoteAddress ||
       req.connection.socket?.remoteAddress;
 
+    // FIX: Nếu là chuỗi IP (từ x-forwarded-for), chỉ lấy IP đầu tiên
+    if (ipAddr && typeof ipAddr === "string" && ipAddr.includes(",")) {
+      ipAddr = ipAddr.split(",")[0].trim();
+    }
+
     // Một số môi trường local sẽ trả về ::1 (IPv6 localhost), dễ gây lệch so với phía VNPAY
     // Chuẩn hoá về 127.0.0.1 cho giống sample của VNPAY
     if (!ipAddr || ipAddr === "::1" || ipAddr === "::ffff:127.0.0.1") {
@@ -118,7 +130,8 @@ exports.createTopupPayment = async (req, res) => {
     console.log("VNPAY signed =", signed);
     vnp_Params["vnp_SecureHash"] = signed;
 
-    const paymentUrl = vnp_Url + "?" + qs.stringify(vnp_Params, { encode: false });
+    const paymentUrl =
+      vnp_Url + "?" + qs.stringify(vnp_Params, { encode: false });
     console.log("VNPAY paymentUrl =", paymentUrl);
     res.json({
       paymentUrl,
@@ -155,7 +168,9 @@ exports.vnpayIpn = async (req, res) => {
       // Ví dụ: tìm transaction theo vnp_TxnRef
       const transaction = await Transaction.findOne({ vnp_TxnRef: orderId });
       if (!transaction) {
-        return res.status(200).json({ RspCode: "01", Message: "Order not found" });
+        return res
+          .status(200)
+          .json({ RspCode: "01", Message: "Order not found" });
       }
 
       // Nếu giao dịch chưa được cập nhật, tiến hành cập nhật
@@ -214,8 +229,7 @@ exports.vnpayCallback = async (req, res) => {
       const rspCode = vnp_Params["vnp_ResponseCode"];
 
       // Chỉ cần redirect về frontend kèm mã code để hiển thị
-      const frontendUrl =
-        process.env.FRONTEND_URL || "http://localhost:5173";
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
       return res.redirect(
         `${frontendUrl}/wallet?code=${rspCode}&success=${
           rspCode === "00" ? "true" : "false"
@@ -340,7 +354,11 @@ exports.payServiceWithVNPay = async (req, res) => {
     }
 
     const date = new Date();
-    const createDate = date.toISOString().slice(0, 19).replace(/[-:]/g, "").replace("T", "");
+    const createDate = date
+      .toISOString()
+      .slice(0, 19)
+      .replace(/[-:]/g, "")
+      .replace("T", "");
     const expireDate = new Date(date.getTime() + 15 * 60 * 1000)
       .toISOString()
       .slice(0, 19)
@@ -370,8 +388,12 @@ exports.payServiceWithVNPay = async (req, res) => {
     vnp_Params["vnp_OrderInfo"] = `Thanh toan dich vu ${service.serviceName}`;
     vnp_Params["vnp_OrderType"] = "other";
     vnp_Params["vnp_Locale"] = "vn";
-    vnp_Params["vnp_ReturnUrl"] = `${process.env.MAP_SERVICE_URL || process.env.VNP_RETURN_URL || "https://allinone-map-service.onrender.com"}/api/payment/service-callback?serviceId=${serviceId}`;
-    vnp_Params["vnp_IpAddr"] = req.ip || req.connection.remoteAddress;
+    vnp_Params["vnp_ReturnUrl"] = `${
+      process.env.MAP_SERVICE_URL ||
+      process.env.VNP_RETURN_URL ||
+      "https://allinone-map-service.onrender.com"
+    }/api/payment/service-callback?serviceId=${serviceId}`;
+    vnp_Params["vnp_IpAddr"] = ipAddr;
     vnp_Params["vnp_CreateDate"] = createDate;
     vnp_Params["vnp_ExpireDate"] = expireDate;
 
@@ -388,7 +410,8 @@ exports.payServiceWithVNPay = async (req, res) => {
     const signed = hmac.update(signData, "utf-8").digest("hex");
     vnp_Params["vnp_SecureHash"] = signed;
 
-    const paymentUrl = vnp_Url + "?" + querystring.stringify(vnp_Params, { encode: false });
+    const paymentUrl =
+      vnp_Url + "?" + querystring.stringify(vnp_Params, { encode: false });
 
     res.json({
       paymentUrl,
@@ -432,7 +455,11 @@ exports.servicePaymentCallback = async (req, res) => {
 
       const payment = await Payment.findOne({ vnp_TxnRef: orderId });
       if (!payment) {
-        return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/services/${serviceId}?error=payment_not_found`);
+        return res.redirect(
+          `${
+            process.env.FRONTEND_URL || "http://localhost:5173"
+          }/services/${serviceId}?error=payment_not_found`
+        );
       }
 
       if (rspCode === "00") {
@@ -490,18 +517,33 @@ exports.servicePaymentCallback = async (req, res) => {
           vnp_TransactionNo: vnp_Params["vnp_TransactionNo"],
         });
 
-        return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/services/${serviceId}?success=true`);
+        return res.redirect(
+          `${
+            process.env.FRONTEND_URL || "http://localhost:5173"
+          }/services/${serviceId}?success=true`
+        );
       } else {
         payment.status = "failed";
         await payment.save();
-        return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/services/${serviceId}?error=payment_failed`);
+        return res.redirect(
+          `${
+            process.env.FRONTEND_URL || "http://localhost:5173"
+          }/services/${serviceId}?error=payment_failed`
+        );
       }
     } else {
-      return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/services/${serviceId}?error=invalid_signature`);
+      return res.redirect(
+        `${
+          process.env.FRONTEND_URL || "http://localhost:5173"
+        }/services/${serviceId}?error=invalid_signature`
+      );
     }
   } catch (error) {
     console.error("Error in service payment callback:", error);
-    return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/services/${serviceId}?error=server_error`);
+    return res.redirect(
+      `${
+        process.env.FRONTEND_URL || "http://localhost:5173"
+      }/services/${serviceId}?error=server_error`
+    );
   }
 };
-
