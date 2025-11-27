@@ -126,7 +126,7 @@ exports.createTopupPayment = async (req, res) => {
     console.log("VNPAY signData =", signData);
     console.log("VNPAY hashSecret =", vnp_HashSecret);
     const hmac = crypto.createHmac("sha512", vnp_HashSecret);
-    const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+    const signed = hmac.update(new Buffer(signData, "utf-8")).digest("hex");
     console.log("VNPAY signed =", signed);
     vnp_Params["vnp_SecureHash"] = signed;
 
@@ -158,7 +158,7 @@ exports.vnpayIpn = async (req, res) => {
     vnp_Params = sortObject(vnp_Params);
     const signData = qs.stringify(vnp_Params, { encode: false });
     const hmac = crypto.createHmac("sha512", vnp_HashSecret);
-    const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+    const signed = hmac.update(new Buffer(signData, "utf-8")).digest("hex");
 
     if (secureHash === signed) {
       const orderId = vnp_Params["vnp_TxnRef"];
@@ -447,7 +447,7 @@ exports.servicePaymentCallback = async (req, res) => {
     const querystring = require("querystring");
     const signData = querystring.stringify(sortedParams, { encode: false });
     const hmac = crypto.createHmac("sha512", vnp_HashSecret);
-    const checkSum = hmac.update(signData, "utf-8").digest("hex");
+    const checkSum = hmac.update(new Buffer(signData, "utf-8")).digest("hex");
 
     if (secureHash === checkSum) {
       const orderId = vnp_Params["vnp_TxnRef"];
