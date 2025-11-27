@@ -1,21 +1,51 @@
 const crypto = require("crypto");
+const qs = require("qs");
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
 const Payment = require("../models/Payment");
 const Service = require("../models/Service");
 const { updateWallet } = require("./walletController");
 
-// VNPAY Configuration
-const vnp_TmnCode = process.env.VNP_TMNCODE || "YOUR_TMNCODE";
-const vnp_HashSecret = process.env.VNP_HASH_SECRET || "YOUR_HASH_SECRET";
-const vnp_Url = process.env.VNP_URL || "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-const vnp_ReturnUrl = process.env.VNP_RETURN_URL || "http://localhost:5173/wallet/callback";
+// VNPAY Configuration (lấy từ biến môi trường)
+const vnp_TmnCode = process.env.VNP_TMNCODE;
+const vnp_HashSecret = process.env.VNP_HASH_SECRET;
+const vnp_Url =
+  process.env.VNP_URL || "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+// URL backend để nhận callback từ VNPAY (vnp_ReturnUrl)
+// QUAN TRỌNG: VNPAY không thể truy cập localhost từ internet!
+// - Nếu test local: Dùng ngrok để expose localhost (ví dụ: https://abc123.ngrok.io/api/wallet/return)
+// - Nếu deploy Render: https://allinone-user-service.onrender.com/api/wallet/return
+// - KHÔNG dùng: http://localhost:5001/api/wallet/return (VNPAY không thể gọi được)
+const vnp_ReturnUrl =
+  process.env.VNP_RETURN_URL || "http://localhost:5001/api/wallet/return";
+
+// Hàm sort object đúng chuẩn VNPAY
+const sortObject = (obj) => {
+  const sorted = {};
+  const keys = Object.keys(obj)
+    .filter((key) => obj[key] !== null && obj[key] !== undefined && obj[key] !== "")
+    .sort();
+
+  for (const key of keys) {
+    sorted[key] = obj[key];
+  }
+  return sorted;
+};
 
 // @desc    Tạo URL thanh toán VNPAY cho nạp tiền
 // @route   POST /api/payment/topup
 // @access  Private
 exports.createTopupPayment = async (req, res) => {
   try {
+    // Kiểm tra cấu hình VNPAY trước khi tiếp tục để tránh lỗi key = undefined
+    if (!vnp_TmnCode || !vnp_HashSecret) {
+      console.error("VNPAY config error: VNP_TMNCODE or VNP_HASH_SECRET is missing");
+      return res.status(500).json({
+        message:
+          "VNPAY chưa được cấu hình đúng trên server. Vui lòng liên hệ admin để bổ sung VNP_TMNCODE và VNP_HASH_SECRET.",
+      });
+    }
+
     const { amount } = req.body;
 
     if (!amount || amount < 10000) {
@@ -28,18 +58,17 @@ exports.createTopupPayment = async (req, res) => {
     }
 
     // Tạo transaction record
+    // Thiết lập timezone giống demo VNPAY
+    process.env.TZ = "Asia/Ho_Chi_Minh";
     const date = new Date();
-    const createDate = date.toISOString().slice(0, 19).replace(/[-:]/g, "").replace("T", "");
-    const expireDate = new Date(date.getTime() + 15 * 60 * 1000)
-      .toISOString()
-      .slice(0, 19)
-      .replace(/[-:]/g, "")
-      .replace("T", "");
+    const moment = require("moment");
+    const createDate = moment(date).format("YYYYMMDDHHmmss");
 
-    const orderId = `TOPUP_${req.user.id}_${Date.now()}`;
-    const amountVND = amount * 100; // VNPAY yêu cầu số tiền tính bằng xu
+    // Mã đơn hàng theo format demo (có thể tuỳ biến nhưng nên đơn giản)
+    const orderId = moment(date).format("DDHHmmss");
+    const amountVND = amount * 100; // VNPAY yêu cầu số tiền tính bằng đơn vị đồng * 100
 
-    // Tạo transaction
+    // Tạo transaction pending
     const transaction = await Transaction.create({
       user: req.user.id,
       type: "topup",
@@ -49,38 +78,48 @@ exports.createTopupPayment = async (req, res) => {
       vnp_TxnRef: orderId,
     });
 
-    // Tạo URL thanh toán VNPAY
-    const vnp_Params = {};
+    // Lấy IP giống demo
+    let ipAddr =
+      req.headers["x-forwarded-for"] ||
+      req.connection.remoteAddress ||
+      req.socket?.remoteAddress ||
+      req.connection.socket?.remoteAddress;
+
+    // Một số môi trường local sẽ trả về ::1 (IPv6 localhost), dễ gây lệch so với phía VNPAY
+    // Chuẩn hoá về 127.0.0.1 cho giống sample của VNPAY
+    if (!ipAddr || ipAddr === "::1" || ipAddr === "::ffff:127.0.0.1") {
+      ipAddr = "127.0.0.1";
+    }
+
+    // Tạo URL thanh toán VNPAY (theo đúng format demo)
+    let vnp_Params = {};
     vnp_Params["vnp_Version"] = "2.1.0";
     vnp_Params["vnp_Command"] = "pay";
     vnp_Params["vnp_TmnCode"] = vnp_TmnCode;
     vnp_Params["vnp_Amount"] = amountVND;
     vnp_Params["vnp_CurrCode"] = "VND";
     vnp_Params["vnp_TxnRef"] = orderId;
-    vnp_Params["vnp_OrderInfo"] = `Nap tien vao vi ${amount.toLocaleString("vi-VN")} VND`;
+    vnp_Params["vnp_OrderInfo"] = `Nap tien vao vi ${amount.toLocaleString(
+      "vi-VN"
+    )} VND`;
     vnp_Params["vnp_OrderType"] = "other";
     vnp_Params["vnp_Locale"] = "vn";
     vnp_Params["vnp_ReturnUrl"] = vnp_ReturnUrl;
-    vnp_Params["vnp_IpAddr"] = req.ip || req.connection.remoteAddress;
+    vnp_Params["vnp_IpAddr"] = ipAddr;
     vnp_Params["vnp_CreateDate"] = createDate;
-    vnp_Params["vnp_ExpireDate"] = expireDate;
 
-    // Sắp xếp params và tạo secure hash
-    const sortedParams = Object.keys(vnp_Params)
-      .sort()
-      .reduce((acc, key) => {
-        acc[key] = vnp_Params[key];
-        return acc;
-      }, {});
-
-    const querystring = require("querystring");
-    const signData = querystring.stringify(sortedParams, { encode: false });
+    // Sắp xếp params và tạo secure hash (dùng qs giống demo)
+    vnp_Params = sortObject(vnp_Params);
+    const signData = qs.stringify(vnp_Params, { encode: false });
+    console.log("VNPAY signData =", signData);
+    console.log("VNPAY hashSecret =", vnp_HashSecret);
     const hmac = crypto.createHmac("sha512", vnp_HashSecret);
-    const signed = hmac.update(signData, "utf-8").digest("hex");
+    const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+    console.log("VNPAY signed =", signed);
     vnp_Params["vnp_SecureHash"] = signed;
 
-    const paymentUrl = vnp_Url + "?" + querystring.stringify(vnp_Params, { encode: false });
-
+    const paymentUrl = vnp_Url + "?" + qs.stringify(vnp_Params, { encode: false });
+    console.log("VNPAY paymentUrl =", paymentUrl);
     res.json({
       paymentUrl,
       transactionId: transaction._id,
@@ -92,69 +131,103 @@ exports.createTopupPayment = async (req, res) => {
   }
 };
 
-// @desc    Xử lý callback từ VNPAY
-// @route   GET /api/payment/callback
+// @desc    IPN từ VNPAY (server-to-server) - BẮT BUỘC phải trả JSON có RspCode, Message
+// @route   GET /api/wallet/ipn
 // @access  Public
-exports.vnpayCallback = async (req, res) => {
+exports.vnpayIpn = async (req, res) => {
   try {
-    const vnp_Params = req.query;
+    let vnp_Params = req.query;
     const secureHash = vnp_Params["vnp_SecureHash"];
 
     delete vnp_Params["vnp_SecureHash"];
     delete vnp_Params["vnp_SecureHashType"];
 
-    // Sắp xếp và tạo hash để verify
-    const sortedParams = Object.keys(vnp_Params)
-      .sort()
-      .reduce((acc, key) => {
-        acc[key] = vnp_Params[key];
-        return acc;
-      }, {});
-
-    const querystring = require("querystring");
-    const signData = querystring.stringify(sortedParams, { encode: false });
+    vnp_Params = sortObject(vnp_Params);
+    const signData = qs.stringify(vnp_Params, { encode: false });
     const hmac = crypto.createHmac("sha512", vnp_HashSecret);
-    const checkSum = hmac.update(signData, "utf-8").digest("hex");
+    const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 
-    if (secureHash === checkSum) {
+    if (secureHash === signed) {
       const orderId = vnp_Params["vnp_TxnRef"];
       const rspCode = vnp_Params["vnp_ResponseCode"];
 
-      // Tìm transaction
+      // Ở đây bạn nên kiểm tra orderId, amount, trạng thái giao dịch trong DB
+      // Ví dụ: tìm transaction theo vnp_TxnRef
       const transaction = await Transaction.findOne({ vnp_TxnRef: orderId });
       if (!transaction) {
-        return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/wallet?error=transaction_not_found`);
+        return res.status(200).json({ RspCode: "01", Message: "Order not found" });
       }
 
-      if (rspCode === "00") {
-        // Thanh toán thành công
-        transaction.status = "completed";
-        transaction.vnp_TransactionNo = vnp_Params["vnp_TransactionNo"];
-        transaction.vnp_ResponseCode = rspCode;
-        await transaction.save();
+      // Nếu giao dịch chưa được cập nhật, tiến hành cập nhật
+      if (transaction.status === "pending") {
+        if (rspCode === "00") {
+          // Thanh toán thành công
+          transaction.status = "completed";
+          transaction.vnp_TransactionNo = vnp_Params["vnp_TransactionNo"];
+          transaction.vnp_ResponseCode = rspCode;
+          await transaction.save();
 
-        // Cập nhật số dư ví
-        const user = await User.findById(transaction.user);
-        if (user) {
-          user.wallet.balance += transaction.amount;
-          await user.save();
+          // Cập nhật số dư ví
+          const user = await User.findById(transaction.user);
+          if (user) {
+            user.wallet.balance += transaction.amount;
+            await user.save();
+          }
+        } else {
+          // Thanh toán thất bại
+          transaction.status = "failed";
+          transaction.vnp_ResponseCode = rspCode;
+          await transaction.save();
         }
-
-        return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/wallet?success=true`);
-      } else {
-        // Thanh toán thất bại
-        transaction.status = "failed";
-        transaction.vnp_ResponseCode = rspCode;
-        await transaction.save();
-
-        return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/wallet?error=payment_failed`);
       }
-    } else {
-      return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/wallet?error=invalid_signature`);
+
+      // BẮT BUỘC: trả về JSON đúng format để VNPAY không báo lỗi "Sai định dạng dữ liệu"
+      return res.status(200).json({ RspCode: "00", Message: "Success" });
     }
+
+    // Sai checksum
+    return res.status(200).json({ RspCode: "97", Message: "Fail checksum" });
   } catch (error) {
-    console.error("Error in VNPAY callback:", error);
-    return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/wallet?error=server_error`);
+    console.error("Error in VNPAY IPN:", error);
+    return res.status(200).json({ RspCode: "99", Message: "Unknow error" });
+  }
+};
+
+// @desc    Callback khi khách quay lại website (vnp_ReturnUrl)
+// @route   GET /api/wallet/return
+// @access  Public
+exports.vnpayCallback = async (req, res) => {
+  try {
+    let vnp_Params = req.query;
+    const secureHash = vnp_Params["vnp_SecureHash"];
+
+    delete vnp_Params["vnp_SecureHash"];
+    delete vnp_Params["vnp_SecureHashType"];
+
+    vnp_Params = sortObject(vnp_Params);
+    const signData = qs.stringify(vnp_Params, { encode: false });
+    const hmac = crypto.createHmac("sha512", vnp_HashSecret);
+    const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+
+    if (secureHash === signed) {
+      const rspCode = vnp_Params["vnp_ResponseCode"];
+
+      // Chỉ cần redirect về frontend kèm mã code để hiển thị
+      const frontendUrl =
+        process.env.FRONTEND_URL || "http://localhost:5173";
+      return res.redirect(
+        `${frontendUrl}/wallet?code=${rspCode}&success=${
+          rspCode === "00" ? "true" : "false"
+        }`
+      );
+    }
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    return res.redirect(`${frontendUrl}/wallet?code=97&success=false`);
+  } catch (error) {
+    console.error("Error in VNPAY return callback:", error);
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    return res.redirect(`${frontendUrl}/wallet?code=99&success=false`);
   }
 };
 

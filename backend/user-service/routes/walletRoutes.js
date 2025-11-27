@@ -5,6 +5,7 @@ const { getWallet } = require("../controllers/walletController");
 const {
   createTopupPayment,
   vnpayCallback,
+  vnpayIpn,
   payService,
   payServiceWithVNPay,
   servicePaymentCallback,
@@ -23,7 +24,11 @@ router.post(
   createTopupPayment
 );
 
-router.get("/callback", vnpayCallback);
+// Callback khi khách quay lại (vnp_ReturnUrl) - không cần auth
+router.get("/return", vnpayCallback);
+
+// IPN từ VNPAY (server-to-server) - không cần auth, phải trả JSON
+router.get("/ipn", vnpayIpn);
 
 router.post(
   "/pay-service",
