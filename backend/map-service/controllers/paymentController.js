@@ -578,26 +578,15 @@ const vnp_ReturnUrl =
 
 // HÀM SORT OBJECT ĐÃ FIX (URL-ENCODE VÀ THAY %20 BẰNG +)
 const sortObject = (obj) => {
-  let sorted = {};
-  let str = [];
-  let key;
-  // Lọc key không rỗng, không null, không undefined
-  for (key in obj) {
-    if (
-      obj.hasOwnProperty(key) &&
-      obj[key] !== null &&
-      obj[key] !== undefined &&
-      obj[key] !== ""
-    ) {
-      str.push(key);
-    }
-  }
-  str.sort();
+  const sorted = {};
+  const keys = Object.keys(obj)
+    .filter(
+      (key) => obj[key] !== null && obj[key] !== undefined && obj[key] !== ""
+    )
+    .sort();
 
-  for (key = 0; key < str.length; key++) {
-    // URL-encode value và thay thế %20 bằng + (theo VNPAY demo)
-    let value = String(obj[str[key]]);
-    sorted[str[key]] = encodeURIComponent(value).replace(/%20/g, "+");
+  for (const key of keys) {
+    sorted[key] = obj[key]; // KHÔNG encode ở đây
   }
   return sorted;
 };
@@ -687,7 +676,8 @@ exports.createTopupPayment = async (req, res) => {
 
     // Sắp xếp params và tạo secure hash (dùng qs giống demo)
     vnp_Params = sortObject(vnp_Params);
-    const signData = qs.stringify(vnp_Params, { encode: false });
+    let signData = qs.stringify(vnp_Params, { encode: true });
+    signData = signData.replace(/%20/g, "+");
     console.log("VNPAY signData =", signData);
     console.log("VNPAY hashSecret =", vnp_HashSecret);
     const hmac = crypto.createHmac("sha512", vnp_HashSecret);
@@ -974,7 +964,8 @@ exports.payServiceWithVNPay = async (req, res) => {
     vnp_Params = sortObject(vnp_Params);
 
     const querystring = require("querystring");
-    const signData = qs.stringify(vnp_Params, { encode: false });
+    let signData = qs.stringify(vnp_Params, { encode: true });
+    signData = signData.replace(/%20/g, "+");
     const hmac = crypto.createHmac("sha512", vnp_HashSecret);
     const signed = hmac.update(new Buffer(signData, "utf-8")).digest("hex");
     vnp_Params["vnp_SecureHash"] = signed;
